@@ -54,9 +54,9 @@ Ensure the system is up with
 - Matplotlib
 
 The program takes three command line arguments:
-1. path to people.csv
-2. path to act_train.csv
-3. path to act_test.csv
+- path to people.csv
+- path to act_train.csv
+- path to act_test.csv
 
 For example: redHat.py people.csv act_train.csv act_test.csv
 
