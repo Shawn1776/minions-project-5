@@ -37,7 +37,7 @@ Preprocessing:
 - Convert the categorical values into numerical ones
 - Convert boolean attributes to numerical ones
 - Break date column into three separate columns, namely date, month, and year
-- Fill '0' for the missing values
+- Fill '-1' for the missing values
 - Merge people and activity files
 - Separate the data and labels
 
@@ -45,6 +45,8 @@ Flow:
 ----
 - Load the datasets into dataframes
 - Perform the preprocessing
+- Drop date, people_id, and act_id columns
+- Use a 4-fold cross validation to have 3-folds as the training set and 1-fold for the validation set
 
 Execution:
 ---------
