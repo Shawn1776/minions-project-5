@@ -46,7 +46,11 @@ Flow:
 - Load the datasets into dataframes
 - Perform the preprocessing
 - Drop date, people_id, and act_id columns
+- Perform Logistic Regression for RFE. RFE uses the model accuracy to identify which attributes contribute the most to  
+  predicting the target attribute.
 - Use a 4-fold cross validation to have 3-folds as the training set and 1-fold for the validation set
+- Apply Random Forest classification from Spark's MLlib with the following attributes 
+
 
 Execution:
 ---------
@@ -64,9 +68,11 @@ For example: redHat.py people.csv act_train.csv act_test.csv
 
 Performance:
 -----------
+We made a submission on Kaggle.
 
 Tuning the accuracy:
 -------------------
+
 
 Stuff we tried:
 --------------
