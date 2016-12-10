@@ -49,7 +49,9 @@ Flow:
 - Perform Logistic Regression for RFE. RFE uses the model accuracy to identify which attributes contribute the most to  
   predicting the target attribute.
 - Use a 4-fold cross validation to have 3-folds as the training set and 1-fold for the validation set
-- Apply Random Forest classification from Spark's MLlib with the following attributes 
+- Apply Random Forest classification from Spark's MLlib with the following attributes
+- Predict outcomes for activities in the testing data set
+- Build a submission file with activities and their outcomes
 
 
 Execution:
@@ -72,7 +74,7 @@ We made a submission on Kaggle.
 
 Tuning the accuracy:
 -------------------
-
+- Tuning parameters of Random Forest classifier, namely maxDepth, no. of trees, maxBin.
 
 Stuff we tried:
 --------------
