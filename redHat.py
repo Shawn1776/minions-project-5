@@ -4,7 +4,9 @@ from subprocess import check_output
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
-from sklearn.ensemble import RandomForestClassifier
+from pyspark import SparkContext, SparkConf
+from pyspark.mllib.tree import RandomForest, RandomForestModel
+from pyspark.mllib.util import MLUtils
 
 def loadData(peoplePath, trainPath, testPath):
     print ("Loading input files.. \n")
@@ -62,19 +64,52 @@ def merge():
     print ("Merging the datasets.. \n")
 
     train = pd.merge(train, people, how='left', on='people_id', left_index=True)
-    train.fillna(0.0, inplace=True)
+    train.fillna(-1, inplace=True)
     test = pd.merge(test, people, how='left', on='people_id', left_index=True)
-    test.fillna(0.0, inplace=True)
+    test.fillna(-1, inplace=True)
 
     train = train.drop(['people_id'], axis=1)
-            
+    
+def featureRanking():
+    model = LogisticRegression()
+    rfe = RFE(model, 28)
+    fit = rfe.fit(X, Y)
+    print("Num Features: %d") % fit.n_features_
+    print("Selected Features: %s") % fit.support_
+    print("Feature Ranking: %s") % fit.ranking_
+    
+    //drop columns and convert to libsvm
+
+def model():
+    data = MLUtils.loadLibSVMFile(sc, 'libsvm_data.txt')
+    (trainData, valData) = data.randomSplit([0.7, 0.3])
+    model = RandomForest.trainClassifier(trainData, numClasses=2, categoricalFeaturesInfo={}, numTrees=100, featureSubsetStrategy="auto", impurity='gini', maxDepth=4, maxBins=32)
+    predictions = model.predict(valData.map(lambda x: x.features))
+    labelsAndPredictions = valData.map(lambda lp: lp.label).zip(predictions)
+    testErr = labelsAndPredictions.filter(lambda (v, p): v != p).count() / float(valData.count())
+    print('Test Error = ' + str(testErr))
+    print('Learned classification forest model:')
+    print(model.toDebugString())
+    
+def predict():
+    test = test.drop(['people_id'], axis=1)
+    test_x = test.iloc[:, 1:]
+    predictions = model.predict(valData.map(lambda x: x.features))
+    test['outcome'] = predictions
+    test[['activity_id', 'outcome']].to_csv('submission.csv', index=False)
+    
 def main():
+    sc = SparkContext(conf = SparkConf().setAppName("redHat"))
     people = None
     train = None
     test = None
+    model = None
     loadData(sys.argv[1], sys.argv[2], sys.argv[3])
     trainSetOverview()
     processData()
     merge()
+    featureRanking()
+    model()
+    predict()
     
 main()
