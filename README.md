@@ -53,7 +53,6 @@ Flow:
 - Predict outcomes for activities in the testing data set
 - Build a submission file with activities and their outcomes
 
-
 Execution:
 ---------
 Ensure the system is up with
