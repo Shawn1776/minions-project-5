@@ -9,7 +9,6 @@ Approach: To classify customer potential using a suitable prediction model.
 Technologies Used:
 -----------------
 - Python 2.7
-- Apache Spark
 - RFE
 - Logistic Regression
 - Random Forest Classifier
@@ -49,14 +48,13 @@ Flow:
 - Perform Logistic Regression for RFE. RFE uses the model accuracy to identify which attributes contribute the most to  
   predicting the target attribute.
 - Use a 4-fold cross validation to have 3-folds as the training set and 1-fold for the validation set
-- Apply Random Forest classification from Spark's MLlib with the following attributes
+- Apply Random Forest classification
 - Predict outcomes for activities in the testing data set
-- Build a submission file with activities and their outcomes
+- Build a submission file with activities and their corresponding predicted outcomes
 
 Execution:
 ---------
 Ensure the system is up with
-- Apache Spark
 - RFE
 - Matplotlib
 
