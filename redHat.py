@@ -7,25 +7,9 @@ from sklearn.model_selection import cross_val_score
 from pyspark import SparkContext, SparkConf
 from pyspark.mllib.tree import RandomForest, RandomForestModel
 from pyspark.mllib.util import MLUtils
-
-def loadData(peoplePath, trainPath, testPath):
-    print ("Loading input files.. \n")
-    people = pd.read_csv(peoplePath,
-                       dtype={'people_id': np.str,
-                              'activity_id': np.str,
-                              'char_38': np.int32},
-                       parse_dates=['date'])
-    train = pd.read_csv(trainPath,
-                        dtype={'people_id': np.str,
-                               'activity_id': np.str,
-                               'outcome': np.int8},
-                        parse_dates=['date'])
-    test = pd.read_csv(testPath,
-                       dtype={'people_id': np.str,
-                              'activity_id': np.str},
-                       parse_dates=['date'])
     
 def trainSetOverview():
+    global train
     print ("Training data overview \n")
     print ("Column Headers:", list(train.columns.values), "\n")
     print (train.dtypes)
@@ -36,6 +20,7 @@ def trainSetOverview():
             print (str(col) + ' has ' + str(pd.isnull(train[col]).sum()) + ' missing values \n')
 
 def processData():
+    global train, test
     print ("Processing the datasets.. \n")
     for data in [train,test]:
         for i in range(1,11):
@@ -61,6 +46,7 @@ def processData():
     people.drop('date', axis=1, inplace=True)
     
 def merge():
+    global train, test, people
     print ("Merging the datasets.. \n")
 
     train = pd.merge(train, people, how='left', on='people_id', left_index=True)
@@ -78,20 +64,26 @@ def featureRanking():
     print("Selected Features: %s") % fit.support_
     print("Feature Ranking: %s") % fit.ranking_
     
-    //drop columns and convert to libsvm
+    X = X.drop(['char_1_x'], axis=1)
+    X = X.drop(['char_3_x'], axis=1)
+    X = X.drop(['char_4_x'], axis=1)
+    X = X.drop(['char_5_x'], axis=1)
+    X = X.drop(['char_9_x'], axis=1)
+    X = X.drop(['char_10_x'], axis=1)
+    X = X.drop(['day_x'], axis=1)
+    X = X.drop(['day_y'], axis=1)
+    X = X.drop(['char_31'] , axis=1)
+    X = X.drop(['char_29'], axis=1)
 
-def model():
-    data = MLUtils.loadLibSVMFile(sc, 'libsvm_data.txt')
-    (trainData, valData) = data.randomSplit([0.7, 0.3])
-    model = RandomForest.trainClassifier(trainData, numClasses=2, categoricalFeaturesInfo={}, numTrees=100, featureSubsetStrategy="auto", impurity='gini', maxDepth=4, maxBins=32)
-    predictions = model.predict(valData.map(lambda x: x.features))
-    labelsAndPredictions = valData.map(lambda lp: lp.label).zip(predictions)
-    testErr = labelsAndPredictions.filter(lambda (v, p): v != p).count() / float(valData.count())
-    print('Test Error = ' + str(testErr))
-    print('Learned classification forest model:')
-    print(model.toDebugString())
+    model(X,Y)
     
-def predict():
+def model(X,Y):
+    global train,test
+    rfc = RandomForestClassifier(n_estimators=96)
+    scores = cross_val_score(rfc, X, Y, cv=4)
+    print ("Mean accuracy of Random Forest: " + scores.mean())
+    rfc = rfc.fit(X, Y)
+    
     test = test.drop(['people_id'], axis=1)
     test_x = test.iloc[:, 1:]
     predictions = model.predict(valData.map(lambda x: x.features))
@@ -99,17 +91,14 @@ def predict():
     test[['activity_id', 'outcome']].to_csv('submission.csv', index=False)
     
 def main():
-    sc = SparkContext(conf = SparkConf().setAppName("redHat"))
-    people = None
-    train = None
-    test = None
-    model = None
-    loadData(sys.argv[1], sys.argv[2], sys.argv[3])
     trainSetOverview()
     processData()
     merge()
     featureRanking()
-    model()
-    predict()
+
+print ("Loading input files.. \n")
+people = pd.read_csv(sys.argv[1], dtype={'people_id': np.str, 'activity_id': np.str, 'char_38': np.int32}, parse_dates=['date'])
+train = pd.read_csv(sys.argv[2], dtype={'people_id': np.str, 'activity_id': np.str, 'outcome': np.int8}, parse_dates=['date'])
+test = pd.read_csv(sys.argv[3], dtype={'people_id': np.str, 'activity_id': np.str}, parse_dates=['date'])
     
 main()
