@@ -5,6 +5,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import roc_curve, auc
+import seaborn as sns
+import matplotlib.pyplot as plt
     
 def trainSetOverview():
     global train
@@ -62,8 +64,21 @@ def featureRanking():
     
 #Principle Component Analysis(PCA)
 from sklearn.decomposition import PCA, KernelPCA
-components = 8
-pca = PCA(n_components=components).fit(X)  
+pca = PCA(n_components=8).fit(X) 
+
+X_train = pd.DataFrame(pca.transform(X)[:,:2])
+X_train['target'] = Y.values
+X_train.columns = ["x", "y", "target"]
+
+sns.lmplot('x','y', 
+           data=X_train, 
+           hue="target", 
+           fit_reg=False, 
+           markers=["o", "x"],
+           size=7
+          )      
+          
+plt.show()
     
 def model(X,Y):
     global train,test
