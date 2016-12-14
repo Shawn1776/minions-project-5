@@ -92,7 +92,11 @@ def model(X,Y):
     
     clf = rfc.fit(X_train, y_train)
     scores = clf.score(X_test, y_test) 
-    print(scores.mean())
+    
+    xTestPred = fit.predict_proba(X_test)
+    roc = roc_auc_score(xTestPred[:,1].round(), y_test)
+    print('roc' , roc)
+    
     test = test.drop(['people_id'], axis=1)
     test_x = test.iloc[:, 1:]
     test_x = test_x.drop(['char_1_x','char_3_x','char_4_x','char_5_x','char_9_x','char_10_x','day_x','day_y','char_31','char_29'], axis=1)
