@@ -6,7 +6,8 @@ Team members: Chirag Jain, Sharmin Pathan
 
 Contributors:
 -------------
-Chirag Jain
+
+#Chirag Jain
 - Understanding the dataset
 - PCA Implementation
 - Implementation of Random Forest Classifier
@@ -15,6 +16,3 @@ Chirag Jain
 - Used ROC as Evaluation criteria
 - Contributed in exploring RFE(Recursive Feature Elimination)
 - Kaggle Submission
-
-Sharmin Pathan
-- 
