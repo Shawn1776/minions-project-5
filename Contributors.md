@@ -9,6 +9,7 @@ Contributors:
 
 #Chirag Jain
 - Understanding the dataset
+- Exploratory Data Analysis(EDA)
 - PCA Implementation
 - Implementation of Random Forest Classifier
 - Computing the parameters for tuning the accuracy
