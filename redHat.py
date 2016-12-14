@@ -3,10 +3,10 @@ import pandas as pd
 from subprocess import check_output
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
-from pyspark import SparkContext, SparkConf
-from pyspark.mllib.tree import RandomForest, RandomForestModel
-from pyspark.mllib.util import MLUtils
+from sklearn.metrics import roc_curve, auc
     
 def trainSetOverview():
     global train
@@ -20,19 +20,19 @@ def trainSetOverview():
             print (str(col) + ' has ' + str(pd.isnull(train[col]).sum()) + ' missing values \n')
 
 def processData():
-    global train, test
+    global train, test, people
     print ("Processing the datasets.. \n")
     for data in [train,test]:
         for i in range(1,11):
-            data['char_'+str(i)].fillna('type 0', inplace = 'true')
+            data['char_'+str(i)].fillna('type -1', inplace = 'true')
             data['char_'+str(i)] = data['char_'+str(i)].str.lstrip('type ').astype(np.int32)
         
-    data['activity_category'] = data['activity_category'].str.lstrip('type ').astype(np.int32)
+        data['activity_category'] = data['activity_category'].str.lstrip('type ').astype(np.int32)
     
-    data['year'] = data['date'].dt.year
-    data['month'] = data['date'].dt.month
-    data['day'] = data['date'].dt.day
-    data.drop('date', axis=1, inplace=True)
+        data['year'] = data['date'].dt.year
+        data['month'] = data['date'].dt.month
+        data['day'] = data['date'].dt.day
+        data.drop('date', axis=1, inplace=True)
     
     for i in range(1,10):
         people['char_' + str(i)] = people['char_' + str(i)].str.lstrip('type ').astype(np.int32)
@@ -57,6 +57,11 @@ def merge():
     train = train.drop(['people_id'], axis=1)
     
 def featureRanking():
+    global train
+    Y = train['outcome']
+    X = train.drop(['outcome'], axis=1)
+    X = X.iloc[:,1:]
+    
     model = LogisticRegression()
     rfe = RFE(model, 28)
     fit = rfe.fit(X, Y)
@@ -64,29 +69,21 @@ def featureRanking():
     print("Selected Features: %s") % fit.support_
     print("Feature Ranking: %s") % fit.ranking_
     
-    X = X.drop(['char_1_x'], axis=1)
-    X = X.drop(['char_3_x'], axis=1)
-    X = X.drop(['char_4_x'], axis=1)
-    X = X.drop(['char_5_x'], axis=1)
-    X = X.drop(['char_9_x'], axis=1)
-    X = X.drop(['char_10_x'], axis=1)
-    X = X.drop(['day_x'], axis=1)
-    X = X.drop(['day_y'], axis=1)
-    X = X.drop(['char_31'] , axis=1)
-    X = X.drop(['char_29'], axis=1)
-
+    X = X.drop(['char_1_x','char_3_x','char_4_x','char_5_x','char_9_x','char_10_x','day_x','day_y','char_31','char_29'], axis=1)
     model(X,Y)
     
 def model(X,Y):
     global train,test
     rfc = RandomForestClassifier(n_estimators=96)
-    scores = cross_val_score(rfc, X, Y, cv=4)
-    print ("Mean accuracy of Random Forest: " + scores.mean())
-    rfc = rfc.fit(X, Y)
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=0)
     
+    clf = rfc.fit(X_train, y_train)
+    scores = clf.score(X_test, y_test) 
+    print(scores.mean())
     test = test.drop(['people_id'], axis=1)
     test_x = test.iloc[:, 1:]
-    predictions = model.predict(valData.map(lambda x: x.features))
+    test_x = test_x.drop(['char_1_x','char_3_x','char_4_x','char_5_x','char_9_x','char_10_x','day_x','day_y','char_31','char_29'], axis=1)
+    predictions = list(map(int, rfc.predict(test_x)))
     test['outcome'] = predictions
     test[['activity_id', 'outcome']].to_csv('submission.csv', index=False)
     
