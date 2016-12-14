@@ -19,6 +19,9 @@ def trainSetOverview():
         if (True in pd.isnull(unique)):
             print (str(col) + ' has ' + str(pd.isnull(train[col]).sum()) + ' missing values \n')
 
+###########################
+# Processing the datasets #
+###########################
 def processData():
     global train, test, people
     print ("Processing the datasets.. \n")
@@ -44,7 +47,10 @@ def processData():
     people['month'] = people['date'].dt.month
     people['day'] = people['date'].dt.day
     people.drop('date', axis=1, inplace=True)
-    
+
+########################
+# Merging the datasets #
+########################
 def merge():
     global train, test, people
     print ("Merging the datasets.. \n")
@@ -56,6 +62,9 @@ def merge():
 
     train = train.drop(['people_id'], axis=1)
     
+####################################
+# Feature Extraction and Selection #
+####################################    
 def featureRanking():
     global train
     Y = train['outcome']
@@ -69,9 +78,13 @@ def featureRanking():
     print("Selected Features: %s") % fit.support_
     print("Feature Ranking: %s") % fit.ranking_
     
+    # Dropping columns based on RFE #
     X = X.drop(['char_1_x','char_3_x','char_4_x','char_5_x','char_9_x','char_10_x','day_x','day_y','char_31','char_29'], axis=1)
     model(X,Y)
     
+#########################################
+# Applying the Random Forest Classifier #
+#########################################    
 def model(X,Y):
     global train,test
     rfc = RandomForestClassifier(n_estimators=96)
