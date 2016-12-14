@@ -69,6 +69,9 @@ Performance:
 -----------
 We made a submission on Kaggle.
 
+![screen shot 2016-12-13 at 7 14 34 pm](https://cloud.githubusercontent.com/assets/20985174/21169792/5e309dba-c18d-11e6-87fe-e5f78d084322.png)
+
+
 Tuning the accuracy:
 -------------------
 - Tuning parameters of Random Forest classifier, namely maxDepth, no. of trees, maxBin.
